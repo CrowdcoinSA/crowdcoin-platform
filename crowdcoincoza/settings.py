@@ -33,7 +33,7 @@ CROWDCOIN_ENV = os.environ.get('CROWDCOIN_ENV')
 
 CROWDCOIN_USSD_STRING = "*120*912*87#"
 
-ALLOWED_HOSTS = ['0.0.0.0','crowdcoin-platform.herokuapp.com']
+ALLOWED_HOSTS = ['0.0.0.0','live.crowdcoin.co.za']
 
 CELERY_ACCEPT_CONTENT = ['json']
 
