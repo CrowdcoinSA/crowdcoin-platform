@@ -584,7 +584,7 @@ class VoucherPaymentLeadResource(MultipartResource,ModelResource):
         queryset = VoucherPaymentLead.objects.all()
         resource_name = 'voucher_payments'
         serializer = Serializer()
-        filtering = {'voucher_code':ALL_WITH_RELATIONS,'pocket_from':ALL_WITH_RELATIONS,'security_pin':ALL_WITH_RELATIONS}
+        filtering = {'voucher_code':ALL_WITH_RELATIONS,'pocket_from':ALL_WITH_RELATIONS,'pocket_to':ALL_WITH_RELATIONS}
         ordering = ['created']
         exclude = []
 

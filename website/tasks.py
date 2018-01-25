@@ -248,15 +248,15 @@ def voucher_payment_transaction(sender,*args,**kwargs):
         instance = kwargs.get('instance')
         logger.info(instance.voucher_code)
         if instance:
-            if instance.voucher_code in [None, ''] or len(instance.voucher_code) != 8:
-                voucher_code = get_random_string(length=8,allowed_chars='123456789')
+            if instance.voucher_code in [None, ''] or len(instance.voucher_code) != 13:
+                voucher_code = get_random_string(length=13,allowed_chars='123456789')
                 while VoucherPaymentLead.objects.filter(voucher_code=voucher_code).exists():
-                    voucher_code = get_random_string(length=8,allowed_chars='123456789')
+                    voucher_code = get_random_string(length=13,allowed_chars='123456789')
                 instance.voucher_code = voucher_code
                 instance.save()
-            if instance.security_pin in [None, '']:
-                instance.security_pin = get_random_string(length=4,allowed_chars='123456789')
-                instance.save()
+            # if instance.security_pin in [None, '']:
+            #     instance.security_pin = get_random_string(length=4,allowed_chars='123456789')
+            #     instance.save()
             if instance.status in ["Pending","Awaiting Collection","Collected"]:
                 transaction_tag = "voucher purchase #{id}".format(id=instance.id)
 
@@ -286,10 +286,13 @@ def voucher_payment_transaction(sender,*args,**kwargs):
                         amount=instance.amount,
                         datetime=datetime.now()
                     )
+                    logger.info(instance.pocket_from.voucher_sending_fee.strip('%'))
+                    fee_from_amount = float(instance.amount) * float(instance.pocket_from.voucher_sending_fee.strip('%'))/100 if '%' in instance.pocket_from.voucher_sending_fee else float(instance.pocket_from.voucher_sending_fee)
+                    logger.info("Fee %s"%fee_from_amount)
                     fee_from = Transaction.objects.create(
                         debit=True,
                         pocket=instance.pocket_from,
-                        amount=settings.VOUCHER_SENDING_FEE,
+                        amount=fee_from_amount,
                         datetime=datetime.now()
                     )
                     
@@ -305,11 +308,9 @@ def voucher_payment_transaction(sender,*args,**kwargs):
                                                                                           
                     # send_sms(msg_recipient,instance.recipient_msisdn)
 
-                    msg_sender = "(((C) " \
-                        "{amount} Crowdcoin Voucher\n" \
+                    msg_sender = "(((C) {amount}\n" \
                         "Voucher Code: {voucher_code}\n" \
-                        "Security PIN: {voucher_security_pin} \nDial *129*912*87# to manage your vouchers.\n\nhelp.crowdcoin.za for help.".format(amount=instance.amount,
-                            voucher_security_pin=instance.security_pin,
+                        "Dial *129*912*87*87# to load your vouchers.\n\nhelp.crowdcoin.za.".format(amount=instance.amount,
                             recipient_name=instance.recipient_name,
                             voucher_code=instance.voucher_code)                    
                     send_sms(msg_sender,instance.sender_msisdn)
@@ -324,10 +325,12 @@ def voucher_payment_transaction(sender,*args,**kwargs):
                         amount=instance.amount,
                         datetime=datetime.now()
                     )
+                    fee_to_amount = float(instance.amount) * float(instance.pocket_to.voucher_receiving_fee.strip('%'))/100 if '%' in instance.pocket_to.voucher_receiving_fee else float(instance.pocket_to.voucher_receiving_fee)
+                    logger.info("Fee %s"%fee_to_amount)
                     fee_to = Transaction.objects.create(
                         debit=False,
                         pocket=instance.pocket_to,
-                        amount=settings.VOUCHER_RECIEVING_FEE,
+                        amount=fee_to_amount,
                         datetime=datetime.now()
                     )
 

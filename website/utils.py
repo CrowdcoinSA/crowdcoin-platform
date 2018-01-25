@@ -452,7 +452,7 @@ def process_vodacom_leads(cell_no,password):
 
 
     url_login = 'https://myvodacom.secure.vodacom.co.za/rest/services/v1/context/loginUser/'+cell_no   
-    url_statement = 'https://myvodacom.secure.vodacom.co.za/rest/services/v1/statement/rechargehistory/'+cell_no
+    url_statement = '   https://myvodacom.secure.vodacom.co.za/rest/services/v1/statement/rechargehistory/'+cell_no
     logger.info("Processing SIM: {msisdn}, {cell_no}".format(msisdn=msisdn,cell_no=cell_no))
     sim = SimCard.objects.get(msisdn__in=[msisdn,cell_no])
     logger.info("Processing Sim: %s" % sim)

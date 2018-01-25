@@ -107,7 +107,8 @@ class Pocket(models.Model):
     tag = models.CharField(max_length=120,null=True,blank=True)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
-
+    voucher_sending_fee = models.CharField(max_length=100,default='0%',blank=True)
+    voucher_receiving_fee = models.CharField(max_length=100,default='15%',blank=True)
 
     def __unicode__(self):
         return "%s" % self.name
