@@ -313,7 +313,7 @@ def voucher_payment_transaction(sender,*args,**kwargs):
                         "Dial *129*912*87*87# to load your voucher.\n\nhelp.crowdcoin.za.".format(amount=instance.amount,
                             recipient_name=instance.recipient_name,
                             voucher_code=instance.voucher_code)                    
-                    send_sms(msg_sender,instance.sender_msisdn)
+                    send_sms(msg_sender,instance.recipient_msisdn)
 
                 if instance.status == "Collected":
                     Transaction.objects.filter(identifiers=reciever_tag).delete()
