@@ -31,7 +31,7 @@ DEBUG = bool(os.environ.get('DJANGO_DEBUG'))
 
 CROWDCOIN_ENV = os.environ.get('CROWDCOIN_ENV')
 
-CROWDCOIN_USSD_STRING = "*120*912*87#"
+CROWDCOIN_USSD_STRING = "*120*912*87*87#"
 
 ALLOWED_HOSTS = ['0.0.0.0','live.crowdcoin.co.za']
 

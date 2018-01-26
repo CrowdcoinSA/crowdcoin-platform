@@ -54,14 +54,14 @@ def ussdView(request):
         node_name = request.GET.get("ussd_node_name")
         network = request.GET.get("ussd_network_name")
         ussd_request = request.GET.get("ussd_request")
-        try:
-            ussd_request_args = ussd_request.strip("#").split(settings.CROWDCOIN_USSD_STRING[:-1],1)[1][1:].split("*")
-        except Exception as e:
-            logger.debug(e.message)
-            ussd_request_args = ussd_request
-        logger.debug(settings.CROWDCOIN_USSD_STRING)
-        logger.debug(ussd_request)
-        logger.debug(ussd_request_args)
+        # try:
+        #     ussd_request_args = ussd_request.strip("#").split(settings.CROWDCOIN_USSD_STRING[:-1],1)[1][1:].split("*")
+        # except Exception as e:
+        #     logger.debug(e.message)
+        #     ussd_request_args = ussd_request
+        # logger.debug(settings.CROWDCOIN_USSD_STRING)
+        # logger.debug(ussd_request)
+        # logger.debug(ussd_request_args)
         #Replace country code
         msisdn = '0'+str(msisdn[2:])
 
@@ -69,12 +69,12 @@ def ussdView(request):
         if node_name == "Menu":
             logger.debug("Called Menu")
             merchant_id = None
-            if len(ussd_request_args) > 1:
-                merchant_id = int(ussd_request_args[0])
-                amount = int(ussd_request_args[1])
+            # if len(ussd_request_args) > 1:
+            #     merchant_id = int(ussd_request_args[0])
+            #     amount = int(ussd_request_args[1])
 
-                logger.debug(merchant_id)
-                logger.debug(amount)
+                # logger.debug(merchant_id)
+                # logger.debug(amount)
 
 
 
@@ -143,6 +143,52 @@ def ussdView(request):
             else:
                 response = "You have no transactions."
             return HttpResponse(response)
+
+
+        if node_name == "Balance":
+            logger.info(msisdn)
+            profile = UserProfile.objects.get(user__username=msisdn)
+            pocket = profile.default_pocket #profile.pockets.filter(active=True).order_by('created')[int(request.GET.get("ussd_response_Active_Pocket_"+node_name,profile.default_pocket))-1]
+            response = "(((C) {tag}\n\n" \
+                       "Balance: {balance} Crowdcoins".format(balance=pocket.balance(),tag=pocket.tag)
+            return HttpResponse(response)
+
+
+        if node_name == "Redeem_Voucher":
+            profile = UserProfile.objects.get(user__username=msisdn)
+            pocket_to = pocket = profile.default_pocket
+            voucher_code = request.GET.get("ussd_response_Voucher_Code")
+            if VoucherPaymentLead.objects.filter(active=True,voucher_code=voucher_code):
+                voucher = VoucherPaymentLead.objects.get(active=True,voucher_code=voucher_code)
+                if voucher.status in ["Pending","Awaiting Collection"]:
+                    voucher.pocket_to = pocket_to
+                    voucher.active = False
+                    voucher.status = "Collected"
+                    voucher.save()
+                    response = "R {amount} voucher redeemed and credited to {tag}.".format(amount=voucher.amount,tag=voucher.pocket_to.tag)
+
+                    #Send redeemption sms
+                    msg = "(((C) Hi {full_names}\n" \
+                          "Thank you for crediting {pocket_name}   with {amount} Crowdcoins.".format(pocket_name=pocket_to.tag,
+                                                                                             amount=voucher.amount,
+                                                                                             full_names=profile.user.get_full_name())
+                    send_sms(msg,profile.msisdn)
+
+                else:
+
+                    response = "You have entered an incorrect Voucher Security Pin."
+            else:
+                if VoucherPaymentLead.objects.filter(active=False, voucher_code=voucher_code):
+                    if VoucherPaymentLead.objects.get(active=False,
+                                                      voucher_code=voucher_code).pocket_to in profile.pockets.all():
+                        response = "You have already redeemed this voucher"
+                    else:
+                        response = "The provided Voucher has already been redeemed"
+                else:
+                    response = "You have entered an incorrect Voucher number."
+            return HttpResponse(response)
+
+
         else:
             response = "No option selected"
             return HttpResponse(response, status=200)
@@ -341,7 +387,7 @@ def api_merchant_registration(request):
             "Your Crowdcoin Merchant Details:\n"\
             "Username:{username}\n"\
             "Password:{password}\n"\
-            "Send/Recieve Crowdcoins at http://merchant.crowdcoin.co.za or dial *120*912*87#".format(first_name=user.first_name,username=user.username,password=request.POST.get('password'))
+            "Send/Recieve Crowdcoins at http://dashboard.crowdcoin.co.za or dial *120*912*87*87#".format(first_name=user.first_name,username=user.username,password=request.POST.get('password'))
 
         bank_deposit_msg = "(((C) Please Top-up your Merchant account with at least R 350.\n\n"\
             "FNB Banking details:\n"\
