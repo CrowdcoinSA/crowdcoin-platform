@@ -288,6 +288,7 @@ def voucher_payment_transaction(sender,*args,**kwargs):
                     )
                     logger.info(instance.pocket_from.voucher_sending_fee.strip('%'))
                     fee_from_amount = float(instance.amount) * float(instance.pocket_from.voucher_sending_fee.strip('%'))/100 if '%' in instance.pocket_from.voucher_sending_fee else float(instance.pocket_from.voucher_sending_fee)
+                    fee_from_amount = abs(fee_from_amount)
                     logger.info("Fee %s"%fee_from_amount)
                     fee_from = Transaction.objects.create(
                         debit=True,
@@ -326,6 +327,7 @@ def voucher_payment_transaction(sender,*args,**kwargs):
                         datetime=datetime.now()
                     )
                     fee_to_amount = float(instance.amount) * float(instance.pocket_to.voucher_receiving_fee.strip('%'))/100 if '%' in instance.pocket_to.voucher_receiving_fee else float(instance.pocket_to.voucher_receiving_fee)
+                    fee_to_amount = abs(fee_to_amount)
                     logger.info("Fee %s"%fee_to_amount)
                     fee_to = Transaction.objects.create(
                         debit=False,

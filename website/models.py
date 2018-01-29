@@ -108,7 +108,9 @@ class Pocket(models.Model):
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     voucher_sending_fee = models.CharField(max_length=100,default='0%',blank=True)
-    voucher_receiving_fee = models.CharField(max_length=100,default='15%',blank=True)
+    voucher_receiving_fee = models.CharField(max_length=100,default='0%',blank=True)
+    payout_hold_days = models.IntegerField(default=7)
+    payout_monthly_limit = models.DecimalField(decimal_places=2, max_digits=20, default=10000)
 
     def __unicode__(self):
         return "%s" % self.name

@@ -191,6 +191,33 @@ def ussdView(request):
                     response = "You have entered an incorrect Voucher number."
             return HttpResponse(response)
 
+        if node_name == "Generate_Voucher":
+            profile = UserProfile.objects.get(user__username=msisdn)
+            pocket_from = profile.default_pocket
+            amount = float(request.GET.get("ussd_response_Voucher_Amount"))
+            if pocket_from.balance() >= amount and amount >= 0 :
+                voucher = VoucherPaymentLead.objects.create(active=True,
+                                                            pocket_from=pocket_from,
+                                                            amount=amount
+                                                            )
+                #ToDO:Notify parties wih sms, Celery
+                response = "(((C) Voucher Details\n\n" \
+                           "Amount:{amount}\n" \
+                           "Voucher:{voucher_code}\n" \
+                           "Balance:{pocket_balance} \n".format(amount=voucher.amount,
+                                                                pocket_balance=pocket_from.balance(),
+                                                                voucher_code=voucher.voucher_code
+                                                                )
+
+                send_sms(profile.msisdn,response)
+
+            else:
+                if amount>0:
+                    response = "Insufficient balance.\nAvailable Balance: {balance} (((c)".format(balance=pocket_from.balance())
+                else:
+                    response = "You entered an incorrect amount."
+
+            return HttpResponse(response)
 
         else:
             response = "No option selected"
