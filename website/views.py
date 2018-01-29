@@ -167,13 +167,14 @@ def ussdView(request):
                     voucher.active = False
                     voucher.status = "Collected"
                     voucher.save()
-                    response = "R {amount} voucher redeemed and credited to {tag}.".format(amount=voucher.amount,tag=voucher.pocket_to.tag)
+                    response = "Thank you!\n{amount} Crowdcoin credited to {tag}.".format(amount=voucher.amount,tag=voucher.pocket_to.tag)
 
                     #Send redeemption sms
-                    msg = "(((C) Hi {full_names}\n" \
-                          "Thank you for crediting {pocket_name}   with {amount} Crowdcoins.".format(pocket_name=pocket_to.tag,
+                    msg = "Hi {full_names}\n" \
+                          "{pocket_name} has been credited with {amount} Crowdcoins.\nBalance:{balance} ".format(pocket_name=pocket_to.tag,
                                                                                              amount=voucher.amount,
-                                                                                             full_names=profile.user.get_full_name())
+                                                                                             full_names=profile.user.get_short_name(),
+                                                                                             balance=pocket_to.balance())
                     send_sms(msg,profile.msisdn)
 
                 else:
