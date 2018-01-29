@@ -64,6 +64,8 @@ def ussdView(request):
         # logger.debug(ussd_request_args)
         #Replace country code
         msisdn = '0'+str(msisdn[2:])
+        user = User.objects.get_or_create(username=msisdn)[0]
+        userProfile = UserProfile.objects.get_or_create(user=user)[0]
 
 
         if node_name == "Menu":
