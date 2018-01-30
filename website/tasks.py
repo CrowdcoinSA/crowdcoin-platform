@@ -312,7 +312,6 @@ def voucher_payment_transaction(sender,*args,**kwargs):
                     msg_sender = "(((C)  Voucher\nAmount: {amount}\n" \
                         "Pin: {voucher_code}\n" \
                         "Dial *129*912*87*87# to load your voucher.\n\nhelp.crowdcoin.za.".format(amount=instance.amount,
-                            recipient_name=instance.recipient_name,
                             voucher_code=instance.voucher_code)                    
                     send_sms(msg_sender,instance.recipient_msisdn)
 

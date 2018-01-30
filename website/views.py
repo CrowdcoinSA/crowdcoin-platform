@@ -198,18 +198,12 @@ def ussdView(request):
             if pocket_from.balance() >= amount and amount >= 0 :
                 voucher = VoucherPaymentLead.objects.create(active=True,
                                                             pocket_from=pocket_from,
-                                                            amount=amount
+                                                            amount=amount,
+                                                            sender_msisdn=msisdn,
+                                                            recipient_msisdn=msisdn,
+                                                            status='Awaiting Collection'
                                                             )
-                #ToDO:Notify parties wih sms, Celery
-                response = "(((C) Voucher Details\n\n" \
-                           "Amount:{amount}\n" \
-                           "Voucher:{voucher_code}\n" \
-                           "Balance:{pocket_balance} \n".format(amount=voucher.amount,
-                                                                pocket_balance=pocket_from.balance(),
-                                                                voucher_code=voucher.voucher_code
-                                                                )
 
-                send_sms(profile.msisdn,response)
 
             else:
                 if amount>0:
