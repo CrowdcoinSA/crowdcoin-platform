@@ -203,7 +203,10 @@ def ussdView(request):
                                                             recipient_msisdn=msisdn,
                                                             status='Awaiting Collection'
                                                             )
-
+            response = "(((C) Voucher Details\n\n" \
+                "Amount:{amount}\n" \
+                "Voucher:{voucher_code}\n" \
+                "Balance:{pocket_balance} \n".format(amount=voucher.amount,pocket_balance=pocket_from.balance(),voucher_code=voucher.voucher_code)
 
             else:
                 if amount>0:
