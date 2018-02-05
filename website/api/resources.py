@@ -80,7 +80,7 @@ class CorsResource(ModelResource):
         return super(CorsResource, self).method_check(request, allowed)
 
 
-class CreateUserResource(ModelResource):
+class CreateUserResource(CorsResource,ModelResource):
     user = fields.ForeignKey('website.api.resources.UserResource', 'user', full=True)
 
     class Meta:
@@ -146,9 +146,10 @@ class CreateUserResource(ModelResource):
                 return bundle
 
 
-class UniqueIdentifierResource(ModelResource):
+class UniqueIdentifierResource(CorsResource,ModelResource):
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -160,7 +161,7 @@ class UniqueIdentifierResource(ModelResource):
         excludes = ['is_active']
      
 
-class UserResource(ModelResource):
+class UserResource(CorsResource,ModelResource):
     # We need to store raw password in a virtual field because hydrate method
     # is called multiple times depending on if it's a POST/PUT/PATCH request
     raw_password = fields.CharField(attribute=None, readonly=True, null=True,
@@ -170,6 +171,7 @@ class UserResource(ModelResource):
         # For authentication, allow both basic and api key so that the key
         # can be grabbed, if needed.
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -230,9 +232,10 @@ class UserProfileResource(CorsResource):
 
 
 
-class NetworkResource(ModelResource):
+class NetworkResource(CorsResource,ModelResource):
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -252,7 +255,7 @@ class NetworkResource(ModelResource):
                     message="Must provide {missing_key} when creating a Network."
                         .format(missing_key=field))
 
-class SimCardResource(ModelResource):
+class SimCardResource(CorsResource,ModelResource):
     network = fields.ForeignKey(
         'website.api.resources.NetworkResource',
         'network',
@@ -261,6 +264,7 @@ class SimCardResource(ModelResource):
     )
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -285,12 +289,13 @@ class SimCardResource(ModelResource):
                     message="Must provide {missing_key} when creating a Sim card."
                         .format(missing_key=field))
 
-class TransactionResource(ModelResource):
+class TransactionResource(CorsResource,ModelResource):
     identifiers = fields.ManyToManyField('website.api.resources.UniqueIdentifierResource', 'identifiers', full=True)
     pocket = fields.ForeignKey('website.api.resources.PocketResource', 'pocket', full=True,null=True)
 
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(), TokenAuthentication())
         authorization = PocketAuthorization()
@@ -318,9 +323,10 @@ class TransactionResource(ModelResource):
                     message="Must provide {missing_key} when creating a Transaction."
                         .format(missing_key=field))
 
-class PocketResource(ModelResource):
+class PocketResource(CorsResource,ModelResource):
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(), TokenAuthentication())
         authorization = Authorization()
@@ -346,7 +352,7 @@ class PocketResource(ModelResource):
                         .format(missing_key=field))
 
 
-class AirtimeDepositLeadResource(MultipartResource,ModelResource):
+class AirtimeDepositLeadResource(MultipartResource,CorsResource,ModelResource):
     pocket = fields.ForeignKey('website.api.resources.PocketResource', 'pocket', full=True, null=True)
     sim_card = fields.ForeignKey('website.api.resources.SimCardResource', 'sim_card', full=True, null=True,blank=True)
     #identifiers = fields.ManyToManyField('website.api.resources.UniqueIdentifierResource', 'identifiers', full=True,
@@ -356,6 +362,7 @@ class AirtimeDepositLeadResource(MultipartResource,ModelResource):
 
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             ApiKeyAuthentication(),
             BasicAuthentication(),
             TokenAuthentication())
@@ -391,13 +398,14 @@ class AirtimeDepositLeadResource(MultipartResource,ModelResource):
 
 
 
-class BankDepositLeadResource(ModelResource):
+class BankDepositLeadResource(CorsResource,ModelResource):
     pocket = fields.ForeignKey('website.api.resources.PocketResource', 'pocket', full=True)
     identifiers = fields.ManyToManyField('website.api.resources.UniqueIdentifierResource', 'identifiers', full=True,
                                          null=True)
 
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -418,12 +426,13 @@ class BankDepositLeadResource(ModelResource):
                         .format(missing_key=field))
 
 
-class BankPaymentLeadResource(ModelResource):
+class BankPaymentLeadResource(CorsResource,ModelResource):
     pocket = fields.ForeignKey('website.api.resources.PocketResource', 'pocket', full=True)
     identifiers = fields.ManyToManyField('website.api.resources.UniqueIdentifierResource', 'identifiers', full=True,
                                          null=True)
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -465,13 +474,14 @@ class BankPaymentLeadResource(ModelResource):
                     message="Could not find any Pocket matching {missing_key}.".format(missing_key=bundle.data.get('pocket')))
         return bundle
 
-class CrowdcoinPaymentLeadResource(MultipartResource,ModelResource):
+class CrowdcoinPaymentLeadResource(MultipartResource,CorsResource,ModelResource):
     pocket_from = fields.ForeignKey('website.api.resources.PocketResource', 'pocket_from', full=True, null=True)
     pocket_to = fields.ForeignKey('website.api.resources.PocketResource', 'pocket_to', full=True)
     identifiers = fields.ManyToManyField('website.api.resources.UniqueIdentifierResource', 'identifiers', full=True,null=True)
     airtime_deposit_lead = fields.ForeignKey('website.api.resources.AirtimeDepositLeadResource', 'airtime_deposit_lead', full=True, null=True)
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             ApiKeyAuthentication(),
             BasicAuthentication(),
             TokenAuthentication())
@@ -523,9 +533,10 @@ class CrowdcoinPaymentLeadResource(MultipartResource,ModelResource):
         return bundle
 
 
-class SmsInboundResource(MultipartResource,ModelResource):
+class SmsInboundResource(MultipartResource,CorsResource,ModelResource):
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -537,9 +548,10 @@ class SmsInboundResource(MultipartResource,ModelResource):
         exclude = []
 
 
-class SmsOutBoundResource(MultipartResource,ModelResource):
+class SmsOutBoundResource(MultipartResource,CorsResource,ModelResource):
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -561,11 +573,12 @@ class SmsOutBoundResource(MultipartResource,ModelResource):
                         )        
         return bundle
 
-class MerchantResource(ModelResource):
+class MerchantResource(CorsResource,ModelResource):
     default_pocket = fields.ForeignKey('website.api.resources.PocketResource', 'default_pocket', full=True,null=True)
     profile = fields.ForeignKey('website.api.resources.UserProfileResource', 'profile', full=True,null=True)
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -579,11 +592,12 @@ class MerchantResource(ModelResource):
         filtering = {'default_pocket':ALL_WITH_RELATIONS,'profile':ALL_WITH_RELATIONS,'display_on_website':ALL}
 
 
-class PromotionResource(ModelResource):
+class PromotionResource(CorsResource,ModelResource):
     referrer = fields.ForeignKey('website.api.resources.PocketResource', 'referrer', full=True,null=True)
 
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -596,11 +610,12 @@ class PromotionResource(ModelResource):
         exclude = []
 
 
-class ClaimedPromotionResource(ModelResource):
+class ClaimedPromotionResource(CorsResource,ModelResource):
     referred = fields.ForeignKey('website.api.resources.PocketResource', 'referred', full=True,null=True)
 
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
@@ -613,12 +628,13 @@ class ClaimedPromotionResource(ModelResource):
 
 
 
-class VoucherPaymentLeadResource(MultipartResource,ModelResource):
+class VoucherPaymentLeadResource(MultipartResource,CorsResource,ModelResource):
     pocket_to = fields.ForeignKey('website.api.resources.PocketResource', 'pocket_to', full=True, null=True)
     pocket_from = fields.ForeignKey('website.api.resources.PocketResource', 'pocket_from', full=True, null=True)
 
     class Meta:
         authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
             BasicAuthentication(),
             ApiKeyAuthentication(),TokenAuthentication())
         authorization = Authorization()
