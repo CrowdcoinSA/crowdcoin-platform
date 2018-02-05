@@ -206,7 +206,10 @@ class UserProfileResource(CorsResource):
     class Meta:
         # For authentication, allow both basic and api key so that the key
         # can be grabbed, if needed.
-        authentication = InlineBasicAuthentication()
+        authentication = MultiAuthentication(
+            InlineBasicAuthentication(),
+            BasicAuthentication(),
+            ApiKeyAuthentication(),TokenAuthentication())
         authorization = UserAuthorization()
         always_return_data = True
         allowed_methods = ['get', 'patch','put' ,'options']
