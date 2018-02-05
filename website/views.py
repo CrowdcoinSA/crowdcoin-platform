@@ -160,35 +160,46 @@ def ussdView(request):
             profile = UserProfile.objects.get(user__username=msisdn)
             pocket_to = pocket = profile.default_pocket
             voucher_code = request.GET.get("ussd_response_Voucher_Code")
-            if VoucherPaymentLead.objects.filter(active=True,voucher_code=voucher_code):
-                voucher = VoucherPaymentLead.objects.get(active=True,voucher_code=voucher_code)
-                if voucher.status in ["Pending","Awaiting Collection"]:
-                    voucher.pocket_to = pocket_to
-                    voucher.active = False
-                    voucher.status = "Collected"
-                    voucher.save()
-                    response = "Thank you!\n{amount} Crowdcoin credited to {tag}.".format(amount=voucher.amount,tag=voucher.pocket_to.tag)
+            voucher_provider = "Crowdcoin" if int(request.GET.get("ussd_response_Voucher_Provider")) == 1 else "Vodacom"
 
-                    #Send redeemption sms
-                    msg = "Hi {full_names}\n" \
-                          "{pocket_name} has been credited with {amount} Crowdcoins.\nBalance:{balance} ".format(pocket_name=pocket_to.tag,
-                                                                                             amount=voucher.amount,
-                                                                                             full_names=profile.user.get_short_name(),
-                                                                                             balance=pocket_to.balance())
-                    send_sms(msg,profile.msisdn)
+            if voucher_provider == 'Crowdcoin':
+                if VoucherPaymentLead.objects.filter(active=True,voucher_code=voucher_code):
+                    voucher = VoucherPaymentLead.objects.get(active=True,voucher_code=voucher_code)
+                    if voucher.status in ["Pending","Awaiting Collection"]:
+                        voucher.pocket_to = pocket_to
+                        voucher.active = False
+                        voucher.status = "Collected"
+                        voucher.provider = voucher_provider
+                        voucher.save()
+                        response = "Thank you!\n{amount} Crowdcoin credited to {tag}.".format(amount=voucher.amount,tag=voucher.pocket_to.tag)
 
-                else:
+                        #Send redeemption sms
+                        msg = "Hi {full_names}\n" \
+                              "{pocket_name} has been credited with {amount} Crowdcoins.\nBalance:{balance} ".format(pocket_name=pocket_to.tag,
+                                                                                                 amount=voucher.amount,
+                                                                                                 full_names=profile.user.get_short_name(),
+                                                                                                 balance=pocket_to.balance())
+                        send_sms(msg,profile.msisdn)
 
-                    response = "You have entered an incorrect Voucher Security Pin."
-            else:
-                if VoucherPaymentLead.objects.filter(active=False, voucher_code=voucher_code):
-                    if VoucherPaymentLead.objects.get(active=False,
-                                                      voucher_code=voucher_code).pocket_to in profile.pockets.all():
-                        response = "You have already redeemed this voucher"
                     else:
-                        response = "The provided Voucher has already been redeemed"
+
+                        response = "You have entered an incorrect Voucher Security Pin."
                 else:
-                    response = "You have entered an incorrect Voucher number."
+                    if VoucherPaymentLead.objects.filter(active=False, voucher_code=voucher_code):
+                        if VoucherPaymentLead.objects.get(active=False,
+                                                          voucher_code=voucher_code).pocket_to in profile.pockets.all():
+                            response = "You have already redeemed this voucher"
+                        else:
+                            response = "The provided Voucher has already been redeemed"
+                    else:
+                        response = "You have entered an incorrect Voucher number."
+            else:
+                voucher = VoucherPaymentLead.objects.get_or_create(active=True,
+                    voucher_code=voucher_code,
+                    provider=voucher_provider,
+                    pocket_to=pocket_to
+                    )[0]
+                response = "Please wait while we convert your {provider} voucher to a Crowdcoin voucher.".format(provider=voucher_provider)
             return HttpResponse(response)
 
         if node_name == "Generate_Voucher":

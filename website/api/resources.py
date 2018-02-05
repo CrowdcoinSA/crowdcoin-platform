@@ -6,15 +6,15 @@ from tastypie.authentication import (
     Authentication, ApiKeyAuthentication, BasicAuthentication,SessionAuthentication,
     MultiAuthentication)
 from tastypie.authorization import Authorization, DjangoAuthorization
-from tastypie.resources import ModelResource#,ALL_WITH_RELATIONS
+from tastypie.resources import ModelResource, Resource
 from tastypie import fields
 from website.api.exceptions import CustomBadRequest
 from website.models import *
 from website.utils import *
 from website.api.authorization import *
-from website.api.authentication import TokenAuthentication
+from website.api.authentication import TokenAuthentication,InlineBasicAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
-from tastypie.exceptions import BadRequest
+from tastypie.exceptions import BadRequest, ImmediateHttpResponse
 from datetime import datetime,timedelta
 import logging
 from django.db.models import Q
@@ -35,6 +35,49 @@ class MultipartResource(object):
             data.update(request.FILES)
             return data
         return super(MultipartResource, self).deserialize(request, data, format)
+
+
+class CorsResource(ModelResource):
+
+    """ adds CORS headers for cross-domain requests """
+
+    def patch_response(self, response):
+
+        allowed_headers = ['Content-Type', 'Authorization']
+
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Headers'] = ','.join(allowed_headers)
+        return response
+
+    def dispatch(self, *args, **kwargs):
+        """ calls super and patches resonse headers
+            or
+            catches ImmediateHttpResponse, patches headers and re-raises
+        """
+
+        try:
+            response = super(CorsResource, self).dispatch(*args, **kwargs)
+            return self.patch_response(response)
+        except ImmediateHttpResponse, e:
+            response = self.patch_response(e.response)
+            # re-raise - we could return a response but then anthing wrapping
+            # this and expecting an exception would be confused
+            raise ImmediateHttpResponse(response)
+
+    def method_check(self, request, allowed=None):
+        """ Handle OPTIONS requests """
+        if request.method.upper() == 'OPTIONS':
+
+            if allowed is None:
+                allowed = []
+
+            allows = ','.join([s.upper() for s in allowed])
+
+            response = HttpResponse(allows)
+            response['Allow'] = allows
+            raise ImmediateHttpResponse(response=response)
+
+        return super(CorsResource, self).method_check(request, allowed)
 
 
 class CreateUserResource(ModelResource):
@@ -155,7 +198,7 @@ class UserResource(ModelResource):
         return bundle
 
  
-class UserProfileResource(ModelResource):
+class UserProfileResource(CorsResource):
     user = fields.ForeignKey(UserResource, 'user', full=True)
     identifier = fields.ManyToManyField(UniqueIdentifierResource,'identifier',full=True, null=True,blank=True)
     default_pocket = fields.ForeignKey('website.api.resources.PocketResource', 'default_pocket', full=True)
@@ -163,18 +206,15 @@ class UserProfileResource(ModelResource):
     class Meta:
         # For authentication, allow both basic and api key so that the key
         # can be grabbed, if needed.
-        authentication = MultiAuthentication(
-            ApiKeyAuthentication(),
-            BasicAuthentication(),
-            TokenAuthentication())
+        authentication = InlineBasicAuthentication()
         authorization = UserAuthorization()
         always_return_data = True
-        allowed_methods = ['get', 'patch','put' ]
+        allowed_methods = ['get', 'patch','put' ,'options']
         detail_allowed_methods = ['get', 'put']
         queryset = UserProfile.objects.all()
         resource_name = 'profile'
         filtering = {'user':ALL_WITH_RELATIONS, 'identifier':ALL_WITH_RELATIONS}
-        serializer = Serializer(formats=['json'])
+        serializer = Serializer(formats=['json','jsonp'])
  
     def authorized_read_list(self, object_list, bundle):
         return object_list.filter(user__username=bundle.request.user.username).select_related()

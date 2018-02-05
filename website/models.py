@@ -297,6 +297,7 @@ class VoucherPaymentLead(models.Model):
     sender_msisdn = models.CharField(max_length=150, blank=True, null=True)
     recipient_msisdn = models.CharField(max_length=150, blank=True, null=True)
     voucher_code = models.CharField(max_length=150, blank=True, null=True)
+    provider = models.CharField(max_length=150, blank=True, default='Crowdcoin')
     security_pin = models.CharField(max_length=150, blank=True, null=True)
     days_valid = models.IntegerField(default=7, blank=True, null=True)
     amount = models.FloatField(default=0,blank=True, null=True)

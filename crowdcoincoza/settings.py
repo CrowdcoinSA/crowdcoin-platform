@@ -132,7 +132,7 @@ UPLOADS_DIRECTORY ='uploads/'
 
 TASTYPIE_ALLOW_MISSING_SLASH = True
 
-
+X_FRAME_OPTIONS = 'Access-Control-Allow-Origin'
 
 #Site-wide logging
 LOGGING = {
