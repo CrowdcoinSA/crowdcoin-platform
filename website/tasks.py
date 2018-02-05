@@ -248,7 +248,7 @@ def voucher_payment_transaction(sender,*args,**kwargs):
         instance = kwargs.get('instance')
         logger.info(instance.voucher_code)
         if instance:
-            if instance.voucher_code in [None, ''] or len(instance.voucher_code) != 13:
+            if instance.voucher_code in [None, '']: #or len(instance.voucher_code) != 13:
                 voucher_code = get_random_string(length=13,allowed_chars='123456789')
                 while VoucherPaymentLead.objects.filter(voucher_code=voucher_code).exists():
                     voucher_code = get_random_string(length=13,allowed_chars='123456789')
