@@ -116,8 +116,7 @@ class CreateUserResource(CorsResource,ModelResource):
                     message="Must provide {missing_key} when creating a user profile."
                         .format(missing_key=field))
             else:
-                REQUIRED_USER_PROFILE_FIELDS = ["username", "raw_password","pin","msisdn", "identification_no", "identification_country",
-                                                "identification_type"]
+                REQUIRED_USER_PROFILE_FIELDS = ["username", "raw_password","msisdn","first_name","last_name"]
 
                 for field in REQUIRED_USER_PROFILE_FIELDS:
                     if field not in bundle.data['profile']:
