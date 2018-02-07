@@ -43,7 +43,7 @@ class CorsResource(ModelResource):
 
     def patch_response(self, response):
 
-        allowed_headers = ['Content-Type', 'Authorization']
+        allowed_headers = ['Content-Type', 'Authorization','x-requested-with']
 
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Headers'] = ','.join(allowed_headers)
@@ -80,11 +80,11 @@ class CorsResource(ModelResource):
         return super(CorsResource, self).method_check(request, allowed)
 
 
-class CreateUserResource(CorsResource):
+class CreateUserResource(MultipartResource,ModelResource):
     user = fields.ForeignKey('website.api.resources.UserResource', 'user', full=True)
 
     class Meta:
-        allowed_methods = ['post']
+        allowed_methods = ['post','options']
         always_return_data = True
         authentication = Authentication()
         authorization = Authorization()

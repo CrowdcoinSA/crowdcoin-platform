@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.conf import settings
 from website.utils import  *
+from website.models import  *
 from website.custom_context_processors import *
 from django.contrib.auth import authenticate
 import logging,csv
