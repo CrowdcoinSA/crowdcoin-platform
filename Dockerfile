@@ -5,4 +5,6 @@
  ADD requirements.txt /code/
  RUN pip install -r requirements.txt
  ADD . /code/
+ RUN chmod +x /code/docker-entrypoint.sh
+ ENTRYPOINT ["/code//docker-entrypoint.sh"]
  EXPOSE 8000
