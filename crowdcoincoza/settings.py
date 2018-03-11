@@ -33,7 +33,7 @@ CROWDCOIN_ENV = os.environ.get('CROWDCOIN_ENV')
 
 CROWDCOIN_USSD_STRING = "*120*912*87*87#"
 
-ALLOWED_HOSTS = ['0.0.0.0','live.crowdcoin.co.za']
+ALLOWED_HOSTS = ['*']
 
 CELERY_ACCEPT_CONTENT = ['json']
 
@@ -94,13 +94,11 @@ WSGI_APPLICATION = 'crowdcoincoza.wsgi.application'
 
 DATABASES = {'default': dj_database_url.config()}
 DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-
-if  CROWDCOIN_ENV != "PRODUCTION":
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-    DATABASES['default']['NAME'] = os.environ.get('DB_NAME')
-    DATABASES['default']['USER'] = os.environ.get('DB_USER')
-    DATABASES['default']['PASSWORD'] = os.environ.get('DB_PASSWORD')
-    DATABASES['default']['HOST'] = os.environ.get('DB_HOST')
+DATABASES['default']['NAME'] = os.environ.get('DB_NAME','postgres')
+DATABASES['default']['USER'] = os.environ.get('DB_USER','postgres')
+DATABASES['default']['PASSWORD'] = os.environ.get('DB_PASSWORD')
+DATABASES['default']['HOST'] = os.environ.get('DB_HOST','db')
+DATABASES['default']['PORT'] = 5432
 
 
 # Internationalization

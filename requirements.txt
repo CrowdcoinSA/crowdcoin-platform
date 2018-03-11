@@ -50,7 +50,6 @@ pytz==2017.2
 redis==2.10.6
 reportlab==3.4.0
 requests==2.18.4
-setupfiles==0.0.50
 six==1.10.0
 South==1.0.2
 sqlparse==0.2.3
