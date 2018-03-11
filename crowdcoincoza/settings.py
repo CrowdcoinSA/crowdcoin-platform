@@ -214,3 +214,7 @@ VOUCHER_RECIEVING_FEE = 0
 PANACEA_USER  = os.environ.get('PANACEA_USER')
 
 PANACEA_PASSWORD  = os.environ.get('PANACEA_PASSWORD')
+
+TIM_CERT = os.environ.get('TIM_CERT')
+
+TIM_KEY = os.environ.get('TIM_KEY')

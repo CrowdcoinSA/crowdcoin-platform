@@ -485,19 +485,30 @@ def process_vodacom_leads(cell_no,password):
 
 def thisisme_id_check(identity_number,country_code='ZA',username=None,identity_type="ID"):
     from website.models import UserProfile
+    import tempfile
 
     try:
-        url = 'https://uat.api.thisisme.com/id_check'
+        url = 'https://uat-api.thisisme.com/id_check'
         data={'identity_number':identity_number,'country_code':country_code,'identity_type':identity_type}
+
+        tim_cert = tempfile.NamedTemporaryFile(delete=False)
+        tim_cert.write(settings.TIM_CERT)
+        tim_cert.seek(0)  
+        tim_cert.close()
+
+        tim_key = tempfile.NamedTemporaryFile(delete=False)
+        tim_key.write(settings.TIM_KEY)
+        tim_key.seek(0)  
+        tim_key.close()
+
         try:
             response = requests.get(
                 url,
-                cert=(
-                    os.path.join(BASE_DIR,'configs/production/thisismecerts/fromthem/crowdcoin.co.za.pem'),
-                    os.path.join(BASE_DIR,'configs/production/thisismecerts/www.crowdcoin.co.za.plainkey.pem')),
+                cert=(tim_cert.name,tim_key.name),
                 verify=False,
                 params=data)
         except Exception as e:
+            print e.message
             return {'response': "An error occured while verifying your Identity. Please check the supplied information and try again.", 'status': 'error'}
         logger.info(response.text)
         response = response.json()
