@@ -36,7 +36,7 @@ Logentries==0.17
 lxml==3.8.0
 olefile==0.44
 packaging==16.8
-Pillow==4.2.1
+Pillow==6.2.0
 pip-upgrader==1.4.3
 psycopg2==2.7.3
 pyasn1==0.3.2
