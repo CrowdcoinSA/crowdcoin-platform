@@ -33,7 +33,7 @@ idna==2.6
 ipaddress==1.0.18
 kombu==3.0.37
 Logentries==0.17
-lxml==3.8.0
+lxml==4.6.3
 olefile==0.44
 packaging==16.8
 Pillow==4.2.1
